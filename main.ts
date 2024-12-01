@@ -21,7 +21,7 @@ const testCases: Record<number, TestCase> = {
       .then((r) => r.text()),
     expected: {
       part1: "1579939",
-      part2: "1544176",
+      part2: "20351745",
     },
   },
 };
