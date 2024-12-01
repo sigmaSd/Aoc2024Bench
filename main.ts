@@ -26,7 +26,46 @@ const testCases: Record<number, TestCase> = {
   },
 };
 
-const solutions: Solution[] = [];
+// Initialize KV store
+const kv = await Deno.openKv();
+
+// Helper functions for KV operations
+async function getSolutions(day?: number, part?: number): Promise<Solution[]> {
+  const solutions: Solution[] = [];
+  const prefix = ["solutions"];
+
+  // Use number as strings for key components
+  if (day !== undefined) prefix.push(String(day));
+  if (part !== undefined) prefix.push(String(part));
+
+  console.log("Fetching solutions with prefix:", prefix);
+
+  const entries = kv.list({ prefix });
+  for await (const entry of entries) {
+    console.log("Found entry:", entry);
+    solutions.push(entry.value as Solution);
+  }
+
+  console.log("Returning solutions:", solutions);
+  return solutions;
+}
+
+async function saveSolution(solution: Solution) {
+  const timestamp = Date.now();
+  const key = [
+    "solutions",
+    String(solution.day),
+    String(solution.part),
+    String(timestamp),
+  ];
+
+  console.log("Saving solution:", {
+    key,
+    solution,
+  });
+
+  await kv.set(key, solution);
+}
 
 function validateCode(code: string) {
   if (code.length > 10000) {
@@ -58,11 +97,6 @@ function validateCode(code: string) {
     // Timing
     "setTimeout",
     "setInterval",
-    // Others
-    "while(true)",
-    "while (true)",
-    "for(;;)",
-    "for (;;)",
   ];
 
   for (const pattern of dangerousPatterns) {
@@ -143,13 +177,31 @@ async function handleRequest(req: Request): Promise<Response> {
   if (url.pathname.startsWith("/api/solutions")) {
     // Get solutions for a specific day
     if (req.method === "GET") {
-      const [day, part] = url.pathname.split("/").slice(-2).map(Number);
-      const daySolutions = solutions.filter((s) =>
-        s.day === day && s.part === part
-      );
-      return new Response(JSON.stringify(daySolutions), {
-        headers: { "content-type": "application/json" },
-      });
+      try {
+        const segments = url.pathname.split("/");
+        const day = parseInt(segments[segments.length - 2]);
+        const part = parseInt(segments[segments.length - 1]) as 1 | 2;
+
+        if (isNaN(day) || isNaN(part)) {
+          throw new Error("Invalid day or part");
+        }
+
+        console.log(`Fetching solutions for day ${day} part ${part}`);
+        const solutions = await getSolutions(day, part);
+
+        return new Response(JSON.stringify(solutions), {
+          headers: { "content-type": "application/json" },
+        });
+      } catch (error) {
+        console.error("Error fetching solutions:", error);
+        return new Response(
+          JSON.stringify({ error: "Error fetching solutions" }),
+          {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          },
+        );
+      }
     }
 
     // Submit new solution
@@ -159,6 +211,12 @@ async function handleRequest(req: Request): Promise<Response> {
       const part = parseInt(data.part) as 1 | 2;
 
       try {
+        console.log("Received solution submission:", {
+          day,
+          part,
+          username: data.username,
+        });
+
         const executionTime = await runCode(data.code, day, part);
 
         const solution: Solution = {
@@ -169,11 +227,14 @@ async function handleRequest(req: Request): Promise<Response> {
           part,
         };
 
-        solutions.push(solution);
+        await saveSolution(solution);
+        console.log("Solution saved successfully");
+
         return new Response(JSON.stringify(solution), {
           headers: { "content-type": "application/json" },
         });
       } catch (error) {
+        console.error("Error saving solution:", error);
         return new Response(
           JSON.stringify({
             error: error instanceof Error ? error.message : String(error),
@@ -207,6 +268,12 @@ async function handleRequest(req: Request): Promise<Response> {
 
   return new Response("Not found", { status: 404 });
 }
+
+// Cleanup function for graceful shutdown
+Deno.addSignalListener("SIGINT", () => {
+  kv.close();
+  Deno.exit();
+});
 
 console.log("Server running on http://localhost:8000");
 Deno.serve({ port: 8000 }, handleRequest);
