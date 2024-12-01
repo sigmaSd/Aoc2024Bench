@@ -1,3 +1,4 @@
+// bench/main.ts
 interface Solution {
   username: string;
   code: string;
@@ -5,51 +6,108 @@ interface Solution {
   day: number;
 }
 
+interface TestCase {
+  input: string;
+  expected: string;
+}
+
+const testCases: Record<number, TestCase> = {
+  1: {
+    input: await fetch(import.meta.resolve("./puzzles/day1.txt"))
+      .then((r) => r.text()),
+    expected: "1579939",
+  },
+};
+
 const solutions: Solution[] = [];
 
-async function runCode(code: string): Promise<number> {
-  const command = new Deno.Command("deno", {
-    args: ["run", "-"],
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "piped",
-  });
-
-  const process = command.spawn();
-
-  try {
-    const writer = process.stdin.getWriter();
-    await writer.write(new TextEncoder().encode(code));
-    await writer.close();
-
-    const startTime = performance.now();
-
-    const status = await Promise.race([
-      process.status,
-      new Promise((_, reject) =>
-        setTimeout(() => {
-          try {
-            process.kill();
-          } catch { /* */ }
-          reject(new Error("Execution timeout"));
-        }, 5000)
-      ),
-    ]);
-
-    const executionTime = performance.now() - startTime;
-
-    if (!status.success) {
-      throw new Error("Execution failed");
-    }
-
-    return executionTime;
-  } catch (error) {
-    throw new Error(
-      `Execution error: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+function validateCode(code: string) {
+  if (code.length > 10000) {
+    throw new Error("Code too long (max 10000 chars)");
   }
+
+  const dangerousPatterns = [
+    "Deno.",
+    "fetch(",
+    "import",
+    "require",
+    "process",
+    "__proto__",
+    "constructor",
+    "prototype",
+    "globalThis",
+    "window",
+    // File system
+    "readFile",
+    "writeFile",
+    "mkdir",
+    "remove",
+    // Network
+    "listen",
+    "connect",
+    // Eval and friends
+    "eval(",
+    "Function(",
+    // Timing
+    "setTimeout",
+    "setInterval",
+    // Others
+    "while(true)",
+    "while (true)",
+    "for(;;)",
+    "for (;;)",
+  ];
+
+  for (const pattern of dangerousPatterns) {
+    if (code.includes(pattern)) {
+      throw new Error(`Forbidden code pattern: ${pattern}`);
+    }
+  }
+}
+
+async function runCode(code: string, day: number): Promise<number> {
+  const testCase = testCases[day];
+  if (!testCase) {
+    throw new Error(`No test case for day ${day}`);
+  }
+
+  validateCode(code);
+
+  return await Promise.race([
+    new Promise<number>((resolve, reject) => {
+      try {
+        const startTime = performance.now();
+
+        // Create solution function in isolated scope
+        const fn = eval(`
+          (input) => {
+            ${code}
+            return solution(input);
+          }
+        `);
+
+        const result = fn(testCase.input);
+
+        if (String(result) !== testCase.expected) {
+          throw new Error(`Expected ${testCase.expected} but got ${result}`);
+        }
+
+        const executionTime = performance.now() - startTime;
+        resolve(executionTime);
+      } catch (error) {
+        reject(
+          new Error(
+            `Execution error: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          ),
+        );
+      }
+    }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Execution timeout (5s)")), 5000)
+    ),
+  ]);
 }
 
 async function handleRequest(req: Request): Promise<Response> {
@@ -81,15 +139,16 @@ async function handleRequest(req: Request): Promise<Response> {
     // Submit new solution
     if (req.method === "POST") {
       const data = await req.json();
+      const day = parseInt(data.day);
 
       try {
-        const executionTime = await runCode(data.code);
+        const executionTime = await runCode(data.code, day);
 
         const solution: Solution = {
           username: data.username,
           code: data.code,
           executionTime,
-          day: parseInt(data.day),
+          day,
         };
 
         solutions.push(solution);
@@ -108,6 +167,18 @@ async function handleRequest(req: Request): Promise<Response> {
         );
       }
     }
+  }
+
+  // API endpoint to get test input
+  if (url.pathname.startsWith("/api/input/")) {
+    const day = parseInt(url.pathname.split("/").pop() || "1");
+    const testCase = testCases[day];
+    if (!testCase) {
+      return new Response("No test case found", { status: 404 });
+    }
+    return new Response(JSON.stringify({ input: testCase.input }), {
+      headers: { "content-type": "application/json" },
+    });
   }
 
   return new Response("Not found", { status: 404 });
