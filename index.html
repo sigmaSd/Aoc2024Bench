@@ -25,11 +25,28 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            position: relative;
         }
 
         .day-button:hover {
             background: #45a049;
+        }
+
+        .day-button.selected {
+            background: #2E7D32;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .day-button.selected::after {
+            content: '▼';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #2E7D32;
+            font-size: 16px;
         }
 
         .solutions-container {
@@ -145,6 +162,17 @@
             border-radius: 5px;
             margin-bottom: 15px;
         }
+
+        .current-day {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            font-size: 1.2em;
+            border-left: 4px solid #4CAF50;
+        }
     </style>
 </head>
 <body>
@@ -166,6 +194,10 @@
             <h3>Most Active User</h3>
             <div id="most-active-user">-</div>
         </div>
+    </div>
+
+    <div id="current-day" class="current-day">
+        Currently viewing: Day 1
     </div>
 
     <div class="days-grid">
@@ -218,6 +250,7 @@
                 document.getElementById('day-input').innerHTML = `
                     <h3>Input for Day ${day} (Part ${part})</h3>
                     <pre><code>${input}</code></pre>
+                    <p>Expected output: ${expected}</p>
                     ${isLongInput ?
                         '<p style="color: #666; font-size: 0.9em;">Input truncated for display</p>'
                         : ''}
@@ -233,6 +266,7 @@
             for (let i = 1; i <= 25; i++) {
                 const button = document.createElement('button');
                 button.className = 'day-button';
+                button.setAttribute('data-day', i);
                 button.textContent = `Day ${i}`;
                 button.onclick = () => loadDay(i);
                 daysGrid.appendChild(button);
@@ -245,10 +279,21 @@
                 option.textContent = `Day ${i}`;
                 daySelect.appendChild(option);
             }
+
+            // Initialize with day 1
+            loadDay(1);
             loadDayInput();
         }
 
         async function loadDay(day) {
+            // Update UI to show selected day
+            document.querySelectorAll('.day-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.day-button[data-day="${day}"]`).classList.add('selected');
+            document.getElementById('current-day').textContent = `Currently viewing: Day ${day}`;
+            document.getElementById('day').value = day;
+
             // Fetch solutions for both parts
             const [part1Response, part2Response] = await Promise.all([
                 fetch(`/api/solutions/${day}/1`),
