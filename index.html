@@ -2,6 +2,12 @@
 <html>
 <head>
     <title>AOC 2024 Benchmark</title>
+    <!-- Add Prism.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+    <!-- Add Prism.js JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -209,7 +215,7 @@
         <div id="day-input" class="day-input"></div>
         <div class="code-template">
             <h3>Solution Template</h3>
-            <pre><code>function solution(input) {
+            <pre><code class="language-javascript">function solution(input) {
     // Your code here
     return result;
 }</code></pre>
@@ -248,11 +254,12 @@
 
                 document.getElementById('day-input').innerHTML = `
                     <h3>Input for Day ${day}</h3>
-                    <pre><code>${input}</code></pre>
+                    <pre><code class="language-javascript">${input}</code></pre>
                     ${isLongInput ?
                         '<p style="color: #666; font-size: 0.9em;">Input truncated for display</p>'
                         : ''}
                 `;
+                Prism.highlightAll();
             } catch (error) {
                 document.getElementById('day-input').innerHTML =
                     `<p>No input available for Day ${day}</p>`;
@@ -315,7 +322,7 @@
                         <div class="solution-item">
                             <h3>${solution.username}</h3>
                             <p>Execution time: ${solution.executionTime.toFixed(2)}ms</p>
-                            <pre><code>${escapeHtml(solution.code)}</code></pre>
+                            <pre><code class="language-javascript">${escapeHtml(solution.code)}</code></pre>
                         </div>
                     `).join('');
             };
@@ -330,6 +337,7 @@
                     ${createSolutionsHtml(part2Solutions, 2)}
                 </div>
             `;
+            Prism.highlightAll();
 
             // Update stats with all solutions
             updateStats([...part1Solutions, ...part2Solutions]);
