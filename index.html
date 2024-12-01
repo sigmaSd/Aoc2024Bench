@@ -190,6 +190,10 @@
         <select id="day" onchange="loadDayInput()">
             <!-- Will be populated by JavaScript -->
         </select>
+        <select id="part" onchange="loadDayInput()">
+            <option value="1">Part 1</option>
+            <option value="2">Part 2</option>
+        </select>
         <textarea id="code" rows="10" placeholder="Paste your solution code here"></textarea>
         <button onclick="submitSolution()">Submit</button>
     </div>
@@ -197,10 +201,12 @@
     <script>
         async function loadDayInput() {
             const day = document.getElementById('day').value;
+            const part = document.getElementById('part').value;
             try {
                 const response = await fetch(`/api/input/${day}`);
                 const data = await response.json();
                 let input = data.input;
+                const expected = data.expected[`part${part}`];
 
                 const maxPreviewLength = 1000;
                 const isLongInput = input.length > maxPreviewLength;
@@ -210,8 +216,9 @@
                 }
 
                 document.getElementById('day-input').innerHTML = `
-                    <h3>Input for Day ${day}</h3>
+                    <h3>Input for Day ${day} (Part ${part})</h3>
                     <pre><code>${input}</code></pre>
+                    <p>Expected output: ${expected}</p>
                     ${isLongInput ?
                         '<p style="color: #666; font-size: 0.9em;">Input truncated for display</p>'
                         : ''}
@@ -243,28 +250,53 @@
         }
 
         async function loadDay(day) {
-            const response = await fetch(`/api/solutions/${day}`);
-            const solutions = await response.json();
+            // Fetch solutions for both parts
+            const [part1Response, part2Response] = await Promise.all([
+                fetch(`/api/solutions/${day}/1`),
+                fetch(`/api/solutions/${day}/2`)
+            ]);
 
-            const solutionsHtml = solutions
-                .sort((a, b) => a.executionTime - b.executionTime)
-                .map(solution => `
-                    <div class="solution-item">
-                        <h3>${solution.username}</h3>
-                        <p>Execution time: ${solution.executionTime.toFixed(2)}ms</p>
-                        <pre><code>${escapeHtml(solution.code)}</code></pre>
-                    </div>
-                `).join('');
+            const part1Solutions = await part1Response.json();
+            const part2Solutions = await part2Response.json();
 
-            document.getElementById('solutions').innerHTML =
-                solutions.length ? solutionsHtml : 'No solutions submitted yet for this day';
+            // Create HTML for both parts
+            const createSolutionsHtml = (solutions, partNumber) => {
+                if (solutions.length === 0) {
+                    return `<div class="solution-item">
+                        <p>No solutions submitted yet for Part ${partNumber}</p>
+                    </div>`;
+                }
 
-            updateStats(solutions);
+                return solutions
+                    .sort((a, b) => a.executionTime - b.executionTime)
+                    .map(solution => `
+                        <div class="solution-item">
+                            <h3>${solution.username}</h3>
+                            <p>Execution time: ${solution.executionTime.toFixed(2)}ms</p>
+                            <pre><code>${escapeHtml(solution.code)}</code></pre>
+                        </div>
+                    `).join('');
+            };
+
+            document.getElementById('solutions').innerHTML = `
+                <div style="margin-bottom: 30px;">
+                    <h2>Part 1 Solutions</h2>
+                    ${createSolutionsHtml(part1Solutions, 1)}
+                </div>
+                <div>
+                    <h2>Part 2 Solutions</h2>
+                    ${createSolutionsHtml(part2Solutions, 2)}
+                </div>
+            `;
+
+            // Update stats with all solutions
+            updateStats([...part1Solutions, ...part2Solutions]);
         }
 
         async function submitSolution() {
             const username = document.getElementById('username').value;
             const day = document.getElementById('day').value;
+            const part = document.getElementById('part').value;
             const code = document.getElementById('code').value;
 
             if (!username || !code) {
@@ -278,7 +310,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ username, day, code })
+                    body: JSON.stringify({ username, day, part, code })
                 });
 
                 const result = await response.json();
@@ -303,7 +335,7 @@
                     sol.executionTime < min.executionTime ? sol : min
                 );
                 document.getElementById('fastest-solution').textContent =
-                    `${fastest.username} (${fastest.executionTime.toFixed(2)}ms)`;
+                    `${fastest.username} (Part ${fastest.part}) - ${fastest.executionTime.toFixed(2)}ms`;
 
                 const userCounts = solutions.reduce((acc, sol) => {
                     acc[sol.username] = (acc[sol.username] || 0) + 1;

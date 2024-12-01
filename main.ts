@@ -4,18 +4,25 @@ interface Solution {
   code: string;
   executionTime: number;
   day: number;
+  part: 1 | 2;
 }
 
 interface TestCase {
   input: string;
-  expected: string;
+  expected: {
+    part1: string;
+    part2: string;
+  };
 }
 
 const testCases: Record<number, TestCase> = {
   1: {
     input: await fetch(import.meta.resolve("./puzzles/day1.txt"))
       .then((r) => r.text()),
-    expected: "1579939",
+    expected: {
+      part1: "1579939",
+      part2: "1544176",
+    },
   },
 };
 
@@ -65,7 +72,11 @@ function validateCode(code: string) {
   }
 }
 
-async function runCode(code: string, day: number): Promise<number> {
+async function runCode(
+  code: string,
+  day: number,
+  part: 1 | 2,
+): Promise<number> {
   const testCase = testCases[day];
   if (!testCase) {
     throw new Error(`No test case for day ${day}`);
@@ -87,9 +98,12 @@ async function runCode(code: string, day: number): Promise<number> {
         `);
 
         const result = fn(testCase.input);
+        const expected = part === 1
+          ? testCase.expected.part1
+          : testCase.expected.part2;
 
-        if (String(result) !== testCase.expected) {
-          throw new Error(`Expected ${testCase.expected} but got ${result}`);
+        if (String(result) !== expected) {
+          throw new Error(`Expected ${expected} but got ${result}`);
         }
 
         const executionTime = performance.now() - startTime;
@@ -129,8 +143,10 @@ async function handleRequest(req: Request): Promise<Response> {
   if (url.pathname.startsWith("/api/solutions")) {
     // Get solutions for a specific day
     if (req.method === "GET") {
-      const day = parseInt(url.pathname.split("/").pop() || "1");
-      const daySolutions = solutions.filter((s) => s.day === day);
+      const [day, part] = url.pathname.split("/").slice(-2).map(Number);
+      const daySolutions = solutions.filter((s) =>
+        s.day === day && s.part === part
+      );
       return new Response(JSON.stringify(daySolutions), {
         headers: { "content-type": "application/json" },
       });
@@ -140,15 +156,17 @@ async function handleRequest(req: Request): Promise<Response> {
     if (req.method === "POST") {
       const data = await req.json();
       const day = parseInt(data.day);
+      const part = parseInt(data.part) as 1 | 2;
 
       try {
-        const executionTime = await runCode(data.code, day);
+        const executionTime = await runCode(data.code, day, part);
 
         const solution: Solution = {
           username: data.username,
           code: data.code,
           executionTime,
           day,
+          part,
         };
 
         solutions.push(solution);
@@ -176,9 +194,15 @@ async function handleRequest(req: Request): Promise<Response> {
     if (!testCase) {
       return new Response("No test case found", { status: 404 });
     }
-    return new Response(JSON.stringify({ input: testCase.input }), {
-      headers: { "content-type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        input: testCase.input,
+        expected: testCase.expected,
+      }),
+      {
+        headers: { "content-type": "application/json" },
+      },
+    );
   }
 
   return new Response("Not found", { status: 404 });
