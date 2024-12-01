@@ -54,6 +54,7 @@
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 40px 0;
         }
 
         .solution-form {
@@ -178,7 +179,6 @@
 <body>
     <div class="header">
         <h1>AOC 2024 Benchmark</h1>
-        <!-- <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button> -->
     </div>
 
     <div class="stats">
@@ -204,10 +204,6 @@
         <!-- Will be populated by JavaScript -->
     </div>
 
-    <div id="solutions" class="solutions-container">
-        Select a day to view solutions
-    </div>
-
     <div class="solution-form">
         <h2>Submit Solution</h2>
         <div id="day-input" class="day-input"></div>
@@ -228,6 +224,11 @@
         </select>
         <textarea id="code" rows="10" placeholder="Paste your solution code here"></textarea>
         <button onclick="submitSolution()">Submit</button>
+    </div>
+
+    <h2>Submitted Solutions</h2>
+    <div id="solutions" class="solutions-container">
+        Select a day to view solutions
     </div>
 
     <script>
