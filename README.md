@@ -1,5 +1,7 @@
 # AOC 2024 Benchmark
 
+https://aoc2024bench.deno.dev/
+
 A web application to benchmark and compare solutions for Advent of Code 2024 puzzles. Users can submit their solutions, see execution times, and compare different approaches.
 
 The application validates solutions against known answers and benchmarks their execution time, making it easy to compare different implementations.
