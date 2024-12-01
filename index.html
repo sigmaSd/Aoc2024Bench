@@ -234,12 +234,10 @@
     <script>
         async function loadDayInput() {
             const day = document.getElementById('day').value;
-            const part = document.getElementById('part').value;
             try {
                 const response = await fetch(`/api/input/${day}`);
                 const data = await response.json();
                 let input = data.input;
-                const expected = data.expected[`part${part}`];
 
                 const maxPreviewLength = 1000;
                 const isLongInput = input.length > maxPreviewLength;
@@ -249,9 +247,8 @@
                 }
 
                 document.getElementById('day-input').innerHTML = `
-                    <h3>Input for Day ${day} (Part ${part})</h3>
+                    <h3>Input for Day ${day}</h3>
                     <pre><code>${input}</code></pre>
-                    <p>Expected output: ${expected}</p>
                     ${isLongInput ?
                         '<p style="color: #666; font-size: 0.9em;">Input truncated for display</p>'
                         : ''}
