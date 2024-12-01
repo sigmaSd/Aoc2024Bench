@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>AOC 2024 Benchmark</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Add Prism.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
@@ -74,6 +75,17 @@
         .solution-item {
             border-bottom: 1px solid #eee;
             padding: 10px 0;
+        }
+
+        .execution-time {
+            font-size: 1.2em;
+            color: #2E7D32;
+            font-weight: bold;
+            padding: 10px;
+            background: #f0f7f0;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 10px 0;
         }
 
         textarea, input, select {
@@ -180,6 +192,24 @@
             font-size: 1.2em;
             border-left: 4px solid #4CAF50;
         }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading::after {
+            content: "⏳";
+            display: inline-block;
+            animation: spin 2s linear infinite;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -240,6 +270,10 @@
     <script>
         async function loadDayInput() {
             const day = document.getElementById('day').value;
+            const dayInputElement = document.getElementById('day-input');
+
+            dayInputElement.innerHTML = '<div class="loading">Loading input...</div>';
+
             try {
                 const response = await fetch(`/api/input/${day}`);
                 const data = await response.json();
@@ -252,7 +286,7 @@
                         '\n\n[... truncated, full input will be used for testing ...]';
                 }
 
-                document.getElementById('day-input').innerHTML = `
+                dayInputElement.innerHTML = `
                     <h3>Input for Day ${day}</h3>
                     <pre><code class="language-javascript">${input}</code></pre>
                     ${isLongInput ?
@@ -261,8 +295,7 @@
                 `;
                 Prism.highlightAll();
             } catch (error) {
-                document.getElementById('day-input').innerHTML =
-                    `<p>No input available for Day ${day}</p>`;
+                dayInputElement.innerHTML = `<p>No input available for Day ${day}</p>`;
             }
         }
 
@@ -291,6 +324,9 @@
         }
 
         async function loadDay(day) {
+            // Clear previous day input
+            document.getElementById('day-input').innerHTML = '';
+
             // Update UI to show selected day
             document.querySelectorAll('.day-button').forEach(btn => {
                 btn.classList.remove('selected');
@@ -298,6 +334,9 @@
             document.querySelector(`.day-button[data-day="${day}"]`).classList.add('selected');
             document.getElementById('current-day').textContent = `Currently viewing: Day ${day}`;
             document.getElementById('day').value = day;
+
+            // Load new day's input
+            loadDayInput();
 
             // Fetch solutions for both parts
             const [part1Response, part2Response] = await Promise.all([
@@ -318,10 +357,15 @@
 
                 return solutions
                     .sort((a, b) => a.executionTime - b.executionTime)
-                    .map(solution => `
+                    .map((solution, index) => `
                         <div class="solution-item">
-                            <h3>${solution.username}</h3>
-                            <p>Execution time: ${solution.executionTime.toFixed(2)}ms</p>
+                            <h3>
+                                ${solution.username}
+                                ${index === 0 ? '<i class="fas fa-trophy" style="color: #FFD700;"></i>' : ''}
+                            </h3>
+                            <div class="execution-time">
+                                <i class="fas fa-clock"></i> Execution time: ${solution.executionTime.toFixed(2)}ms
+                            </div>
                             <pre><code class="language-javascript">${escapeHtml(solution.code)}</code></pre>
                         </div>
                     `).join('');
