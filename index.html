@@ -88,7 +88,9 @@
         margin: 10px 0;
       }
 
-      textarea, input, select {
+      textarea,
+      input,
+      select {
         width: 100%;
         margin-bottom: 10px;
         padding: 8px;
@@ -101,6 +103,10 @@
         border: none;
         border-radius: 5px;
         cursor: pointer;
+      }
+
+      .processingButton {
+        background: #c9b607d7;
       }
 
       pre {
@@ -203,6 +209,7 @@
         0% {
           transform: rotate(0deg);
         }
+
         100% {
           transform: rotate(360deg);
         }
@@ -216,6 +223,7 @@
       }
     </style>
   </head>
+
   <body>
     <div class="header">
       <h1>AOC 2024 Benchmark</h1>
@@ -270,8 +278,33 @@
         rows="10"
         placeholder="Paste your solution code here"
       ></textarea>
-      <button onclick="submitSolution()">Submit</button>
+      <button id="submitButton" onclick="submitSolution()">Submit</button>
     </div>
+
+    <h2>Benchmark Explained (how we control for consistency)</h2>
+    <p>
+      The basics: To measure performance, we simply run your code & use
+      performance.now() to track the execution time. We have made some tweaks to
+      how we run the tests and those changes are detailed below:
+    </p>
+    <p>
+      v1.0 - We run the code once, that's it. This provides us a rough idea of
+      overall performance, but the exact time can vary a bit
+    </p>
+    <p>
+      v1.1 - We run the code 10k times, or up to 1 minute and take the average
+      execution time. This allows us to see a better view of the true average
+      performance. We also discard the first 100 runs, because those tend to
+      vary the most. In our testing, execution times became pretty consistent
+      after less than 100 runs. This benchmark isn't meant to assess literally
+      how fast your code is on an average dataset, but rather provide a
+      consistent way to compare against other solutions.
+    </p>
+    <p>
+      Future improvements to our performance testing is planned, such as:
+      statistical analysis, larger data-sets, execution isolation (queueing
+      requests rather than processing them immediately)
+    </p>
 
     <h2>Submitted Solutions</h2>
     <div id="solutions" class="solutions-container">
@@ -386,7 +419,7 @@
                             <div class="execution-time">
                                 <i class="fas fa-clock"></i> Execution time: ${
               solution.executionTime.toFixed(2)
-            }ms
+            }ms (v${solution.executionVersion ?? "1.0"})
                             </div>
                             <pre><code class="language-javascript">${
               escapeHtml(solution.code)
@@ -412,40 +445,53 @@
       }
 
       async function submitSolution() {
-        const username = document.getElementById("username").value;
-        const day = document.getElementById("day").value;
-        const part = document.getElementById("part").value;
-        const code = document.getElementById("code").value;
+        if (document.getElementById("submitButton").innerText === "Submit") {
+          const username = document.getElementById("username").value;
+          const day = document.getElementById("day").value;
+          const part = document.getElementById("part").value;
+          const code = document.getElementById("code").value;
 
-        if (!username || !code) {
-          alert("Please fill in all fields");
-          return;
-        }
+          document.getElementById("submitButton").innerText = "Processing...";
+          document.getElementById("submitButton").classList.add("processingButton");
 
-        try {
-          const response = await fetch("/api/solutions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, day, part, code }),
-          });
-
-          const result = await response.json();
-
-          if (!response.ok) {
-            throw new Error(result.error || "Submission failed");
+          if (!username || !code) {
+            alert("Please fill in all fields");
+            return;
           }
 
-          alert(
-            `Solution submitted successfully! Execution time: ${
-              result.executionTime.toFixed(2)
-            }ms`,
-          );
-          loadDay(day);
-          document.getElementById("code").value = "";
-        } catch (error) {
-          alert("Error submitting solution: " + error.message);
+          try {
+            const response = await fetch("/api/solutions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, day, part, code }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              throw new Error(result.error || "Submission failed");
+            }
+
+            alert(
+              `Solution submitted successfully! Execution time: ${
+                result.executionTime.toFixed(2)
+              }ms`,
+            );
+            loadDay(day);
+            document.getElementById("code").value = "";
+            document.getElementById("submitButton").innerText = "Submit";
+            document.getElementById("submitButton").classList.remove(
+              "processingButton",
+            );
+          } catch (error) {
+            alert("Error submitting solution: " + error.message);
+            document.getElementById("submitButton").innerText = "Submit";
+            document.getElementById("submitButton").classList.remove(
+              "processingButton",
+            );
+          }
         }
       }
 
