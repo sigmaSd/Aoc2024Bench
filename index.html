@@ -1,367 +1,401 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>AOC 2024 Benchmark</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    >
     <!-- Add Prism.js CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css"
+      rel="stylesheet"
+    />
 
     <!-- Add Prism.js JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"
+    ></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
 
-        .days-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 30px;
-        }
+      .days-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        margin-bottom: 30px;
+      }
 
-        .day-button {
-            padding: 15px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
+      .day-button {
+        padding: 15px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+      }
 
-        .day-button:hover {
-            background: #45a049;
-        }
+      .day-button:hover {
+        background: #45a049;
+      }
 
-        .day-button.selected {
-            background: #2E7D32;
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
+      .day-button.selected {
+        background: #2e7d32;
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
 
-        .solutions-container {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 40px 0;
-        }
+      .solutions-container {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 40px 0;
+      }
 
-        .solution-form {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-top: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+      .solution-form {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        margin-top: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        .solution-item {
-            border-bottom: 1px solid #eee;
-            padding: 10px 0;
-        }
+      .solution-item {
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+      }
 
-        .execution-time {
-            font-size: 1.2em;
-            color: #2E7D32;
-            font-weight: bold;
-            padding: 10px;
-            background: #f0f7f0;
-            border-radius: 4px;
-            display: inline-block;
-            margin: 10px 0;
-        }
+      .execution-time {
+        font-size: 1.2em;
+        color: #2e7d32;
+        font-weight: bold;
+        padding: 10px;
+        background: #f0f7f0;
+        border-radius: 4px;
+        display: inline-block;
+        margin: 10px 0;
+      }
 
-        textarea, input, select {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-        }
+      textarea, input, select {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 8px;
+      }
 
-        button {
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+      button {
+        padding: 10px 20px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
 
-        pre {
-            background: #f8f8f8;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
+      pre {
+        background: #f8f8f8;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
 
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
+      .stats {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
 
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex: 1;
-        }
+      .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        flex: 1;
+      }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
 
-        .theme-toggle {
-            padding: 8px 16px;
-            background: #333;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+      .theme-toggle {
+        padding: 8px 16px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
 
-        .day-input {
-            background: #f8f8f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+      .day-input {
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
 
-        .day-input pre {
-            margin: 0;
-            max-height: 150px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
+      .day-input pre {
+        margin: 0;
+        max-height: 150px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
 
-        .day-input::-webkit-scrollbar {
-            width: 8px;
-        }
+      .day-input::-webkit-scrollbar {
+        width: 8px;
+      }
 
-        .day-input::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
+      .day-input::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
 
-        .day-input::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
+      .day-input::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
 
-        .day-input::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
+      .day-input::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
 
-        .code-template {
-            background: #f8f8f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
+      .code-template {
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
 
-        .current-day {
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            font-size: 1.2em;
-            border-left: 4px solid #4CAF50;
-        }
+      .current-day {
+        margin: 20px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-size: 1.2em;
+        border-left: 4px solid #4caf50;
+      }
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+      }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
 
-        .loading::after {
-            content: "⏳";
-            display: inline-block;
-            animation: spin 2s linear infinite;
-            margin-left: 8px;
-        }
+      .loading::after {
+        content: "⏳";
+        display: inline-block;
+        animation: spin 2s linear infinite;
+        margin-left: 8px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="header">
-        <h1>AOC 2024 Benchmark</h1>
+      <h1>AOC 2024 Benchmark</h1>
     </div>
 
     <div class="stats">
-        <div class="stat-card">
-            <h3>Total Solutions</h3>
-            <div id="total-solutions">0</div>
-        </div>
-        <div class="stat-card">
-            <h3>Fastest Solution</h3>
-            <div id="fastest-solution">-</div>
-        </div>
-        <div class="stat-card">
-            <h3>Most Active User</h3>
-            <div id="most-active-user">-</div>
-        </div>
+      <div class="stat-card">
+        <h3>Total Solutions</h3>
+        <div id="total-solutions">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Fastest Solution</h3>
+        <div id="fastest-solution">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>Most Active User</h3>
+        <div id="most-active-user">-</div>
+      </div>
     </div>
 
     <div id="current-day" class="current-day">
-        Currently viewing: Day 1
+      Currently viewing: Day 1
     </div>
 
     <div class="days-grid">
-        <!-- Will be populated by JavaScript -->
+      <!-- Will be populated by JavaScript -->
     </div>
 
     <div class="solution-form">
-        <h2>Submit Solution</h2>
-        <div id="day-input" class="day-input"></div>
-        <div class="code-template">
-            <h3>Solution Template</h3>
-            <pre><code class="language-javascript">function solution(input) {
+      <h2>Submit Solution</h2>
+      <div id="day-input" class="day-input"></div>
+      <div class="code-template">
+        <h3>Solution Template</h3>
+        <pre
+        >
+<code class="language-javascript">function solution(input) {
     // Your code here
     return result;
-}</code></pre>
-        </div>
-        <input type="text" id="username" placeholder="Username">
-        <select id="day" onchange="loadDayInput()">
-            <!-- Will be populated by JavaScript -->
-        </select>
-        <select id="part" onchange="loadDayInput()">
-            <option value="1">Part 1</option>
-            <option value="2">Part 2</option>
-        </select>
-        <textarea id="code" rows="10" placeholder="Paste your solution code here"></textarea>
-        <button onclick="submitSolution()">Submit</button>
+}</code></pre
+        >
+      </div>
+      <input type="text" id="username" placeholder="Username">
+      <select id="day" onchange="loadDayInput()">
+        <!-- Will be populated by JavaScript -->
+      </select>
+      <select id="part" onchange="loadDayInput()">
+        <option value="1">Part 1</option>
+        <option value="2">Part 2</option>
+      </select>
+      <textarea
+        id="code"
+        rows="10"
+        placeholder="Paste your solution code here"
+      ></textarea>
+      <button onclick="submitSolution()">Submit</button>
     </div>
 
     <h2>Submitted Solutions</h2>
     <div id="solutions" class="solutions-container">
-        Select a day to view solutions
+      Select a day to view solutions
     </div>
 
     <script>
-        async function loadDayInput() {
-            const day = document.getElementById('day').value;
-            const dayInputElement = document.getElementById('day-input');
+      async function loadDayInput() {
+        const day = document.getElementById("day").value;
+        const dayInputElement = document.getElementById("day-input");
 
-            dayInputElement.innerHTML = '<div class="loading">Loading input...</div>';
+        dayInputElement.innerHTML = '<div class="loading">Loading input...</div>';
 
-            try {
-                const response = await fetch(`/api/input/${day}`);
-                const data = await response.json();
-                let input = data.input;
+        try {
+          const response = await fetch(`/api/input/${day}`);
+          const data = await response.json();
+          let input = data.input;
 
-                const maxPreviewLength = 1000;
-                const isLongInput = input.length > maxPreviewLength;
-                if (isLongInput) {
-                    input = input.slice(0, maxPreviewLength) +
-                        '\n\n[... truncated, full input will be used for testing ...]';
-                }
+          const maxPreviewLength = 1000;
+          const isLongInput = input.length > maxPreviewLength;
+          if (isLongInput) {
+            input = input.slice(0, maxPreviewLength) +
+              "\n\n[... truncated, full input will be used for testing ...]";
+          }
 
-                dayInputElement.innerHTML = `
+          dayInputElement.innerHTML = `
                     <h3>Input for Day ${day}</h3>
                     <pre><code class="language-javascript">${input}</code></pre>
-                    ${isLongInput ?
-                        '<p style="color: #666; font-size: 0.9em;">Input truncated for display</p>'
-                        : ''}
+                    ${
+            isLongInput
+              ? '<p style="color: #666; font-size: 0.9em;">Input truncated for display</p>'
+              : ""
+          }
                 `;
-                Prism.highlightAll();
-            } catch (error) {
-                dayInputElement.innerHTML = `<p>No input available for Day ${day}</p>`;
-            }
+          Prism.highlightAll();
+        } catch (error) {
+          dayInputElement.innerHTML = `<p>No input available for Day ${day}</p>`;
+        }
+      }
+
+      function initializeDaysGrid() {
+        const daysGrid = document.querySelector(".days-grid");
+        for (let i = 1; i <= 25; i++) {
+          const button = document.createElement("button");
+          button.className = "day-button";
+          button.setAttribute("data-day", i);
+          button.textContent = `Day ${i}`;
+          button.onclick = () => loadDay(i);
+          daysGrid.appendChild(button);
         }
 
-        function initializeDaysGrid() {
-            const daysGrid = document.querySelector('.days-grid');
-            for (let i = 1; i <= 25; i++) {
-                const button = document.createElement('button');
-                button.className = 'day-button';
-                button.setAttribute('data-day', i);
-                button.textContent = `Day ${i}`;
-                button.onclick = () => loadDay(i);
-                daysGrid.appendChild(button);
-            }
-
-            const daySelect = document.getElementById('day');
-            for (let i = 1; i <= 25; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `Day ${i}`;
-                daySelect.appendChild(option);
-            }
-
-            // Initialize with day 1
-            loadDay(1);
-            loadDayInput();
+        const daySelect = document.getElementById("day");
+        for (let i = 1; i <= 25; i++) {
+          const option = document.createElement("option");
+          option.value = i;
+          option.textContent = `Day ${i}`;
+          daySelect.appendChild(option);
         }
 
-        async function loadDay(day) {
-            // Clear previous day input
-            document.getElementById('day-input').innerHTML = '';
+        // Initialize with day 1
+        loadDay(1);
+        loadDayInput();
+      }
 
-            // Update UI to show selected day
-            document.querySelectorAll('.day-button').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            document.querySelector(`.day-button[data-day="${day}"]`).classList.add('selected');
-            document.getElementById('current-day').textContent = `Currently viewing: Day ${day}`;
-            document.getElementById('day').value = day;
+      async function loadDay(day) {
+        // Clear previous day input
+        document.getElementById("day-input").innerHTML = "";
 
-            // Load new day's input
-            loadDayInput();
+        // Update UI to show selected day
+        document.querySelectorAll(".day-button").forEach((btn) => {
+          btn.classList.remove("selected");
+        });
+        document.querySelector(`.day-button[data-day="${day}"]`).classList.add(
+          "selected",
+        );
+        document.getElementById("current-day").textContent =
+          `Currently viewing: Day ${day}`;
+        document.getElementById("day").value = day;
 
-            // Fetch solutions for both parts
-            const [part1Response, part2Response] = await Promise.all([
-                fetch(`/api/solutions/${day}/1`),
-                fetch(`/api/solutions/${day}/2`)
-            ]);
+        // Load new day's input
+        loadDayInput();
 
-            const part1Solutions = await part1Response.json();
-            const part2Solutions = await part2Response.json();
+        // Fetch solutions for both parts
+        const [part1Response, part2Response] = await Promise.all([
+          fetch(`/api/solutions/${day}/1`),
+          fetch(`/api/solutions/${day}/2`),
+        ]);
 
-            // Create HTML for both parts
-            const createSolutionsHtml = (solutions, partNumber) => {
-                if (solutions.length === 0) {
-                    return `<div class="solution-item">
+        const part1Solutions = await part1Response.json();
+        const part2Solutions = await part2Response.json();
+
+        // Create HTML for both parts
+        const createSolutionsHtml = (solutions, partNumber) => {
+          if (solutions.length === 0) {
+            return `<div class="solution-item">
                         <p>No solutions submitted yet for Part ${partNumber}</p>
                     </div>`;
-                }
+          }
 
-                return solutions
-                    .sort((a, b) => a.executionTime - b.executionTime)
-                    .map((solution, index) => `
+          return solutions
+            .sort((a, b) => a.executionTime - b.executionTime)
+            .map((solution, index) => `
                         <div class="solution-item">
                             <h3>
                                 ${solution.username}
-                                ${index === 0 ? '<i class="fas fa-trophy" style="color: #FFD700;"></i>' : ''}
+                                ${
+              index === 0
+                ? '<i class="fas fa-trophy" style="color: #FFD700;"></i>'
+                : ""
+            }
                             </h3>
                             <div class="execution-time">
-                                <i class="fas fa-clock"></i> Execution time: ${solution.executionTime.toFixed(2)}ms
+                                <i class="fas fa-clock"></i> Execution time: ${
+              solution.executionTime.toFixed(2)
+            }ms
                             </div>
-                            <pre><code class="language-javascript">${escapeHtml(solution.code)}</code></pre>
+                            <pre><code class="language-javascript">${
+              escapeHtml(solution.code)
+            }</code></pre>
                         </div>
-                    `).join('');
-            };
+                    `).join("");
+        };
 
-            document.getElementById('solutions').innerHTML = `
+        document.getElementById("solutions").innerHTML = `
                 <div style="margin-bottom: 30px;">
                     <h2>Part 1 Solutions</h2>
                     ${createSolutionsHtml(part1Solutions, 1)}
@@ -371,92 +405,100 @@
                     ${createSolutionsHtml(part2Solutions, 2)}
                 </div>
             `;
-            Prism.highlightAll();
+        Prism.highlightAll();
 
-            // Update stats with all solutions
-            updateStats([...part1Solutions, ...part2Solutions]);
+        // Update stats with all solutions
+        updateStats([...part1Solutions, ...part2Solutions]);
+      }
+
+      async function submitSolution() {
+        const username = document.getElementById("username").value;
+        const day = document.getElementById("day").value;
+        const part = document.getElementById("part").value;
+        const code = document.getElementById("code").value;
+
+        if (!username || !code) {
+          alert("Please fill in all fields");
+          return;
         }
 
-        async function submitSolution() {
-            const username = document.getElementById('username').value;
-            const day = document.getElementById('day').value;
-            const part = document.getElementById('part').value;
-            const code = document.getElementById('code').value;
+        try {
+          const response = await fetch("/api/solutions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, day, part, code }),
+          });
 
-            if (!username || !code) {
-                alert('Please fill in all fields');
-                return;
-            }
+          const result = await response.json();
 
-            try {
-                const response = await fetch('/api/solutions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, day, part, code })
-                });
+          if (!response.ok) {
+            throw new Error(result.error || "Submission failed");
+          }
 
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || 'Submission failed');
-                }
-
-                alert(`Solution submitted successfully! Execution time: ${result.executionTime.toFixed(2)}ms`);
-                loadDay(day);
-                document.getElementById('code').value = '';
-            } catch (error) {
-                alert('Error submitting solution: ' + error.message);
-            }
+          alert(
+            `Solution submitted successfully! Execution time: ${
+              result.executionTime.toFixed(2)
+            }ms`,
+          );
+          loadDay(day);
+          document.getElementById("code").value = "";
+        } catch (error) {
+          alert("Error submitting solution: " + error.message);
         }
+      }
 
-        function updateStats(solutions) {
-            document.getElementById('total-solutions').textContent = solutions.length;
+      function updateStats(solutions) {
+        document.getElementById("total-solutions").textContent = solutions.length;
 
-            if (solutions.length > 0) {
-                const fastest = solutions.reduce((min, sol) =>
-                    sol.executionTime < min.executionTime ? sol : min
-                );
-                document.getElementById('fastest-solution').textContent =
-                    `${fastest.username} (Part ${fastest.part}) - ${fastest.executionTime.toFixed(2)}ms`;
+        if (solutions.length > 0) {
+          const fastest = solutions.reduce((min, sol) =>
+            sol.executionTime < min.executionTime ? sol : min
+          );
+          document.getElementById("fastest-solution").textContent =
+            `${fastest.username} (Part ${fastest.part}) - ${
+              fastest.executionTime.toFixed(2)
+            }ms`;
 
-                const userCounts = solutions.reduce((acc, sol) => {
-                    acc[sol.username] = (acc[sol.username] || 0) + 1;
-                    return acc;
-                }, {});
+          const userCounts = solutions.reduce((acc, sol) => {
+            acc[sol.username] = (acc[sol.username] || 0) + 1;
+            return acc;
+          }, {});
 
-                const mostActive = Object.entries(userCounts).reduce((max, [user, count]) =>
-                    count > max[1] ? [user, count] : max
-                );
+          const mostActive = Object.entries(userCounts).reduce((
+            max,
+            [user, count],
+          ) => count > max[1] ? [user, count] : max);
 
-                document.getElementById('most-active-user').textContent =
-                    `${mostActive[0]} (${mostActive[1]} solutions)`;
-            }
+          document.getElementById("most-active-user").textContent = `${
+            mostActive[0]
+          } (${mostActive[1]} solutions)`;
         }
+      }
 
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+      function escapeHtml(unsafe) {
+        return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      let darkMode = false;
+      function toggleTheme() {
+        darkMode = !darkMode;
+        if (darkMode) {
+          document.body.style.background = "#1a1a1a";
+          document.body.style.color = "#fff";
+        } else {
+          document.body.style.background = "#f5f5f5";
+          document.body.style.color = "#000";
         }
+      }
 
-        let darkMode = false;
-        function toggleTheme() {
-            darkMode = !darkMode;
-            if (darkMode) {
-                document.body.style.background = '#1a1a1a';
-                document.body.style.color = '#fff';
-            } else {
-                document.body.style.background = '#f5f5f5';
-                document.body.style.color = '#000';
-            }
-        }
-
-        initializeDaysGrid();
+      initializeDaysGrid();
     </script>
-</body>
+  </body>
 </html>
