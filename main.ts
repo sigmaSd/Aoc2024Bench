@@ -3,6 +3,7 @@ interface Solution {
   username: string;
   code: string;
   executionTime: number;
+  executionVersion: number;
   day: number;
   part: 1 | 2;
 }
@@ -225,12 +226,28 @@ async function handleRequest(req: Request): Promise<Response> {
           username: data.username,
         });
 
-        const executionTime = await runCode(data.code, day, part);
+        const allExecutionTimes: any[] = [];
+        const executionStartTimestamp = Date.now();
+        const FIVE_MINUTES = 1 * 60 * 1000;
+        for (let i = 0; i < 10000; i++) {
+          const runResult = await runCode(data.code, day, part);
+          // Discard the first 100 runs as a "warm up"
+          if (i > 100) allExecutionTimes.push(runResult);
+
+          // Exit if runs are taking more than 5 minutes
+          if (Date.now() - executionStartTimestamp > FIVE_MINUTES) i = Infinity;
+        }
+        const totalExecutionTime = allExecutionTimes.reduce((sum, value) => {
+          return sum + value;
+        }, 0);
+        const averageExecutionTime = totalExecutionTime /
+          allExecutionTimes.length;
 
         const solution: Solution = {
           username: data.username,
           code: data.code,
-          executionTime,
+          executionTime: averageExecutionTime,
+          executionVersion: 1.1,
           day,
           part,
         };
