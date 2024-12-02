@@ -24,6 +24,14 @@ const testCases: Record<number, TestCase> = {
       part2: "20351745",
     },
   },
+  2: {
+    input: await fetch(import.meta.resolve("./puzzles/day2.txt"))
+      .then((r) => r.text()),
+    expected: {
+      part1: "379",
+      part2: "430",
+    },
+  },
 };
 
 // Initialize KV store
