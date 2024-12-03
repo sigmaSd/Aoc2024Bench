@@ -451,13 +451,16 @@
           const part = document.getElementById("part").value;
           const code = document.getElementById("code").value;
 
-          document.getElementById("submitButton").innerText = "The server is processing your submission (it may take up to 5 minutes)...";
+          document.getElementById("submitButton").innerText =
+            "The server is processing your submission (it may take up to 5 minutes)...";
           document.getElementById("submitButton").classList.add("processingButton");
 
           if (!username || !code) {
             alert("Please fill in all fields");
             document.getElementById("submitButton").innerText = "Submit";
-            document.getElementById("submitButton").classList.remove("processingButton");
+            document.getElementById("submitButton").classList.remove(
+              "processingButton",
+            );
             return;
           }
 
@@ -474,7 +477,7 @@
             try {
               result = await response.json();
             } catch (parseError) {
-              throw new Error('Invalid response format from server');
+              throw new Error("Invalid response format from server");
             }
 
             if (!response.ok) {
@@ -493,7 +496,9 @@
             alert("Error submitting solution: " + error.message);
           } finally {
             document.getElementById("submitButton").innerText = "Submit";
-            document.getElementById("submitButton").classList.remove("processingButton");
+            document.getElementById("submitButton").classList.remove(
+              "processingButton",
+            );
           }
         }
       }
