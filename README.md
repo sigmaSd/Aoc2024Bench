@@ -2,9 +2,12 @@
 
 https://aoc2024bench.deno.dev/
 
-A web application to benchmark and compare solutions for Advent of Code 2024 puzzles. Users can submit their solutions, see execution times, and compare different approaches.
+A web application to benchmark and compare solutions for Advent of Code 2024
+puzzles. Users can submit their solutions, see execution times, and compare
+different approaches.
 
-The application validates solutions against known answers and benchmarks their execution time, making it easy to compare different implementations.
+The application validates solutions against known answers and benchmarks their
+execution time, making it easy to compare different implementations.
 
 ## Features
 
@@ -26,18 +29,21 @@ The application validates solutions against known answers and benchmarks their e
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd bench
 ```
 
 2. Create a `puzzles` directory and add your input files:
+
 ```bash
 mkdir puzzles
 # Add day1.txt, day2.txt, etc.
 ```
 
 3. Run the server:
+
 ```bash
 deno run --allow-all --unstable-kv main.ts
 ```
@@ -62,12 +68,14 @@ bench/
 1. Select a day and part from the dropdown menus
 2. Enter your username
 3. Paste your solution code following the template:
+
 ```javascript
 function solution(input) {
-    // Your code here
-    return result;
+  // Your code here
+  return result;
 }
 ```
+
 4. Click "Submit" to run and validate your solution
 
 ### Viewing Solutions
