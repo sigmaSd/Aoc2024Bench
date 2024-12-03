@@ -288,8 +288,8 @@
       how we run the tests and those changes are detailed below:
     </p>
     <p>
-      v1.0 - We run the code once, that's it. This provides us a rough idea of
-      overall performance, but the exact time can vary a bit
+      V2.2 - Unfortantly v1.1 run into cpu limtations of deno deploy free tier really quickly,
+      This version reduces the warm up runs to 5, and the code runs to 10 times total.
     </p>
     <p>
       v1.1 - We run the code 10k times, or up to 1 minute and take the average
@@ -299,6 +299,10 @@
       after less than 100 runs. This benchmark isn't meant to assess literally
       how fast your code is on an average dataset, but rather provide a
       consistent way to compare against other solutions.
+    </p>
+    <p>
+      v1.0 - We run the code once, that's it. This provides us a rough idea of
+      overall performance, but the exact time can vary a bit
     </p>
     <p>
       Future improvements to our performance testing is planned, such as:

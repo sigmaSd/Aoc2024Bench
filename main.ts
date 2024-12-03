@@ -254,10 +254,10 @@ async function handleRequest(req: Request): Promise<Response> {
           const allExecutionTimes: number[] = [];
           const executionStartTimestamp = Date.now();
           const FIVE_MINUTES = 1 * 60 * 1000;
-          for (let i = 0; i < 1000; i++) {
+          for (let i = 0; i < 10; i++) {
             const runResult = await runCode(data.code, day, part);
             // Discard the first 100 runs as a "warm up"
-            if (i > 100) allExecutionTimes.push(runResult);
+            if (i > 5) allExecutionTimes.push(runResult);
 
             // Exit if runs are taking more than 5 minutes
             if (Date.now() - executionStartTimestamp > FIVE_MINUTES) {
@@ -274,7 +274,7 @@ async function handleRequest(req: Request): Promise<Response> {
             username: data.username,
             code: data.code,
             executionTime: averageExecutionTime,
-            executionVersion: 1.1,
+            executionVersion: 1.2,
             day,
             part,
           };
