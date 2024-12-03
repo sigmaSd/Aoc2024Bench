@@ -168,130 +168,168 @@ async function runCode(
 }
 
 async function handleRequest(req: Request): Promise<Response> {
-  const url = new URL(req.url);
+  try {
+    const url = new URL(req.url);
 
-  // Serve main page
-  if (url.pathname === "/") {
-    try {
-      const html = await Deno.readTextFile("./index.html");
-      return new Response(html, {
-        headers: { "content-type": "text/html" },
-      });
-    } catch {
-      return new Response("Error loading HTML file", { status: 500 });
-    }
-  }
-
-  // API endpoints
-  if (url.pathname.startsWith("/api/solutions")) {
-    // Get solutions for a specific day
-    if (req.method === "GET") {
+    // Serve main page
+    if (url.pathname === "/") {
       try {
-        const segments = url.pathname.split("/");
-        const day = parseInt(segments[segments.length - 2]);
-        const part = parseInt(segments[segments.length - 1]) as 1 | 2;
-
-        if (isNaN(day) || isNaN(part)) {
-          throw new Error("Invalid day or part");
-        }
-
-        console.log(`Fetching solutions for day ${day} part ${part}`);
-        const solutions = await getSolutions(day, part);
-
-        return new Response(JSON.stringify(solutions), {
-          headers: { "content-type": "application/json" },
+        const html = await fetch(import.meta.resolve("./index.html"))
+          .then((r) => r.text());
+        return new Response(html, {
+          headers: { "content-type": "text/html" },
         });
-      } catch (error) {
-        console.error("Error fetching solutions:", error);
-        return new Response(
-          JSON.stringify({ error: "Error fetching solutions" }),
-          {
-            status: 500,
-            headers: { "content-type": "application/json" },
-          },
-        );
+      } catch {
+        return new Response("Error loading HTML file", { status: 500 });
       }
     }
 
-    // Submit new solution
-    if (req.method === "POST") {
-      const data = await req.json();
-      const day = parseInt(data.day);
-      const part = parseInt(data.part) as 1 | 2;
+    // API endpoints
+    if (url.pathname.startsWith("/api/solutions")) {
+      // Get solutions for a specific day
+      if (req.method === "GET") {
+        try {
+          const segments = url.pathname.split("/");
+          const day = parseInt(segments[segments.length - 2]);
+          const part = parseInt(segments[segments.length - 1]) as 1 | 2;
 
-      try {
-        console.log("Received solution submission:", {
-          day,
-          part,
-          username: data.username,
-        });
+          if (isNaN(day) || isNaN(part)) {
+            throw new Error("Invalid day or part");
+          }
 
-        const allExecutionTimes: any[] = [];
-        const executionStartTimestamp = Date.now();
-        const FIVE_MINUTES = 1 * 60 * 1000;
-        for (let i = 0; i < 10000; i++) {
-          const runResult = await runCode(data.code, day, part);
-          // Discard the first 100 runs as a "warm up"
-          if (i > 100) allExecutionTimes.push(runResult);
+          console.log(`Fetching solutions for day ${day} part ${part}`);
+          const solutions = await getSolutions(day, part);
 
-          // Exit if runs are taking more than 5 minutes
-          if (Date.now() - executionStartTimestamp > FIVE_MINUTES) i = Infinity;
-        }
-        const totalExecutionTime = allExecutionTimes.reduce((sum, value) => {
-          return sum + value;
-        }, 0);
-        const averageExecutionTime = totalExecutionTime /
-          allExecutionTimes.length;
-
-        const solution: Solution = {
-          username: data.username,
-          code: data.code,
-          executionTime: averageExecutionTime,
-          executionVersion: 1.1,
-          day,
-          part,
-        };
-
-        await saveSolution(solution);
-        console.log("Solution saved successfully");
-
-        return new Response(JSON.stringify(solution), {
-          headers: { "content-type": "application/json" },
-        });
-      } catch (error) {
-        console.error("Error saving solution:", error);
-        return new Response(
-          JSON.stringify({
-            error: error instanceof Error ? error.message : String(error),
-          }),
-          {
-            status: 400,
+          return new Response(JSON.stringify(solutions), {
             headers: { "content-type": "application/json" },
-          },
-        );
+          });
+        } catch (error) {
+          console.error("Error fetching solutions:", error);
+          return new Response(
+            JSON.stringify({ error: "Error fetching solutions" }),
+            {
+              status: 500,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }
+      }
+
+      // Submit new solution
+      if (req.method === "POST") {
+        let data;
+        try {
+          data = await req.json();
+        } catch (error) {
+          return new Response(
+            JSON.stringify({ error: "Invalid JSON payload: " + error }),
+            {
+              status: 400,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }
+
+        // Validate required fields
+        if (!data?.username || !data?.code || !data?.day || !data?.part) {
+          return new Response(
+            JSON.stringify({ error: "Missing required fields" }),
+            {
+              status: 400,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }
+
+        const day = parseInt(data.day);
+        const part = parseInt(data.part) as 1 | 2;
+
+        try {
+          console.log("Received solution submission:", {
+            day,
+            part,
+            username: data.username,
+          });
+
+          const allExecutionTimes: number[] = [];
+          const executionStartTimestamp = Date.now();
+          const FIVE_MINUTES = 1 * 60 * 1000;
+          for (let i = 0; i < 10000; i++) {
+            const runResult = await runCode(data.code, day, part);
+            // Discard the first 100 runs as a "warm up"
+            if (i > 100) allExecutionTimes.push(runResult);
+
+            // Exit if runs are taking more than 5 minutes
+            if (Date.now() - executionStartTimestamp > FIVE_MINUTES) {
+              i = Infinity;
+            }
+          }
+          const totalExecutionTime = allExecutionTimes.reduce((sum, value) => {
+            return sum + value;
+          }, 0);
+          const averageExecutionTime = totalExecutionTime /
+            allExecutionTimes.length;
+
+          const solution: Solution = {
+            username: data.username,
+            code: data.code,
+            executionTime: averageExecutionTime,
+            executionVersion: 1.1,
+            day,
+            part,
+          };
+
+          await saveSolution(solution);
+          console.log("Solution saved successfully");
+
+          return new Response(JSON.stringify(solution), {
+            headers: { "content-type": "application/json" },
+          });
+        } catch (error) {
+          return new Response(
+            JSON.stringify({
+              error: error instanceof Error ? error.message : String(error),
+            }),
+            {
+              status: 400,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }
       }
     }
-  }
 
-  // API endpoint to get test input
-  if (url.pathname.startsWith("/api/input/")) {
-    const day = parseInt(url.pathname.split("/").pop() || "1");
-    const testCase = testCases[day];
-    if (!testCase) {
-      return new Response("No test case found", { status: 404 });
+    // API endpoint to get test input
+    if (url.pathname.startsWith("/api/input/")) {
+      const day = parseInt(url.pathname.split("/").pop() || "1");
+      const testCase = testCases[day];
+      if (!testCase) {
+        return new Response("No test case found", { status: 404 });
+      }
+      return new Response(
+        JSON.stringify({
+          input: testCase.input,
+          expected: testCase.expected,
+        }),
+        {
+          headers: { "content-type": "application/json" },
+        },
+      );
     }
+
+    return new Response("Not found", { status: 404 });
+  } catch (error) {
+    console.error("Unhandled error:", error);
     return new Response(
       JSON.stringify({
-        input: testCase.input,
-        expected: testCase.expected,
+        error: "Internal server error",
       }),
       {
+        status: 500,
         headers: { "content-type": "application/json" },
       },
     );
   }
-
-  return new Response("Not found", { status: 404 });
 }
 
 // Cleanup function for graceful shutdown
