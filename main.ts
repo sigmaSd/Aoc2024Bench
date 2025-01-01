@@ -123,25 +123,37 @@ async function runCode(
       try {
         const startTime = performance.now();
 
-        // Create solution function in isolated scope
         const fn = eval(`
-          (input) => {
+          async (input) => {
             ${code}
             return solution(input);
           }
         `);
 
-        const result = fn(testCase.input);
-        const expected = part === 1
-          ? testCase.expected.part1
-          : testCase.expected.part2;
+        fn(testCase.input)
+          // deno-lint-ignore no-explicit-any
+          .then((result: any) => {
+            const expected = part === 1
+              ? testCase.expected.part1
+              : testCase.expected.part2;
 
-        if (String(result) !== expected) {
-          throw new Error(`Expected ${expected} but got ${result}`);
-        }
+            if (String(result) !== expected) {
+              throw new Error(`Expected ${expected} but got ${result}`);
+            }
 
-        const executionTime = performance.now() - startTime;
-        resolve(executionTime);
+            const executionTime = performance.now() - startTime;
+            resolve(executionTime);
+          })
+          // deno-lint-ignore no-explicit-any
+          .catch((error: any) => {
+            reject(
+              new Error(
+                `Execution error: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              ),
+            );
+          });
       } catch (error) {
         reject(
           new Error(
