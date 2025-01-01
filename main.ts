@@ -104,39 +104,6 @@ function validateCode(code: string) {
   if (code.length > 10000) {
     throw new Error("Code too long (max 10000 chars)");
   }
-
-  const dangerousPatterns = [
-    "Deno.",
-    "fetch(",
-    "import",
-    "require",
-    "process",
-    "__proto__",
-    "constructor",
-    "prototype",
-    "globalThis",
-    "window",
-    // File system
-    "readFile",
-    "writeFile",
-    "mkdir",
-    "remove",
-    // Network
-    "listen",
-    "connect",
-    // Eval and friends
-    "eval(",
-    "Function(",
-    // Timing
-    "setTimeout",
-    "setInterval",
-  ];
-
-  for (const pattern of dangerousPatterns) {
-    if (code.includes(pattern)) {
-      throw new Error(`Forbidden code pattern: ${pattern}`);
-    }
-  }
 }
 
 async function runCode(
